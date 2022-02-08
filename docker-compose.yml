@@ -1,0 +1,79 @@
+# todo:
+# # replace apache with litespeed
+# # introduce separate parsoid container?
+# # introduce separate restbase container?
+# # introduce varnish?
+# # add healthcheck option to all services
+# # add restart/deploy:restart_policy option to all services
+
+version: '3'
+
+services:
+  # provides serving, php
+  # attempt replacing with litespeed
+  apache:
+    build: ./apache
+    depends_on:
+      - mariadb
+      - php-fpm
+      - mediawiki
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - code-vol:/var/www/wimaan.org/w:ro
+      - media-vol:/srv/media:ro
+    networks:
+      srv-net:
+        aliases:
+          - apache-c
+    
+  # provides php-fpm (at php-fpm-c:9000)
+  php-fpm:
+    build: ./php-fpm
+    depends_on:
+      - mediawiki
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - code-vol:/var/www/wimaan.org/w:ro
+      - media-vol:/srv/media:rw
+    networks:
+      srv-net:
+        aliases:
+          - php-fpm-c
+      db-net:
+        aliases:
+          - php-fpm-c
+
+  # provides mariadb (mysql)
+  mariadb:
+    image: 'mariadb:latest'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - db-vol:/var/lib/mysql:rw
+    networks:
+      db-net:
+        aliases:
+          - mariadb-c
+    environment:
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASS}
+      - MARIADB_USER=${DB_USER}
+      - MARIADB_PASSWORD=${DB_PASS}
+      - MARIADB_DATABASE=${DB_NAME}
+
+  # provides mediawiki (on disk) and extensions
+  mediawiki:
+    build: ./mediawiki
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - code-vol:/var/www/wimaan.org/w:rw
+
+volumes:
+  db-vol:
+  code-vol:
+  media-vol:
+
+networks:
+  db-net:
+  srv-net:
