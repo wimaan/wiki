@@ -64,7 +64,7 @@ services:
 
   # provides mediawiki (on disk) and extensions
   mediawiki:
-    build: ./mediawiki
+    build: ./mw
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - code-vol:/var/www/wimaan.org/w:rw

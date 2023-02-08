@@ -18,11 +18,11 @@ RUN a2enmod rewrite;\
     
 # TODO: validate the config: apache2ctl configtest
     
-RUN apt install -y python3-certbot-apache;\
-    certbot --apache --agree-tos --no-eff-email -m wimaan.iitm@gmail.com -d wimaan.org ;
-    
-# TODO: add test for certbot renewal
-    
 EXPOSE 80 443
 
 ENTRYPOINT ["apachectl", "-D", "FOREGROUND"]
+
+# RUN apt install -y python3-certbot-apache;\
+#     certbot --apache --agree-tos --no-eff-email -m wimaan@smail.iitm.ac.in -d wimaan.org ;
+    
+# TODO: add test for certbot renewal
