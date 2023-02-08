@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # CREDIT: most functionality in this script is borrowed from metakgp's wiki source (https://github.com/metakgp/metakgp-wiki/blob/master/mediawiki/install_extensions.sh)
 

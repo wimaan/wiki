@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # e: stop execution on an error in executing a script command
 # u: treat unset variable usage as errors
