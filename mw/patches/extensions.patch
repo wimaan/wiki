@@ -1,0 +1,92 @@
+diff -ru out/w/extensions/Echo/i18n/en.json patchedout/w/extensions/Echo/i18n/en.json
+--- out/w/extensions/Echo/i18n/en.json	2023-02-03 06:36:17.000000000 +0530
++++ patchedout/w/extensions/Echo/i18n/en.json	2023-02-08 18:14:44.016119862 +0530
+@@ -185,7 +185,7 @@
+ 	"notification-header-user-rights-remove-only": "{{GENDER:$4|Your}} user rights were {{GENDER:$1|changed}}. You are no longer a member of: $2.",
+ 	"notification-header-user-rights-add-and-remove": "{{GENDER:$6|Your}} user rights were {{GENDER:$1|changed}}. You have been added to: $2. You are no longer a member of: $4.",
+ 	"notification-header-user-rights-expiry-change": "The expiry of {{GENDER:$4|your}} membership in the following {{PLURAL:$3|group|groups}} has been {{GENDER:$1|changed}}: $2.",
+-	"notification-header-welcome": "{{GENDER:$2|Welcome}} to {{SITENAME}}, $1! We're glad {{GENDER:$2|you're}} here.",
++	"notification-header-welcome": "{{GENDER:$2|Welcome}} to {{SITENAME}}, $1. We're now ready to take off!",
+ 	"notification-header-mention-summary": "$1 {{GENDER:$2|mentioned}} {{GENDER:$3|you}} in an edit summary on <strong>$4</strong>.",
+ 	"notification-header-watchlist-changed": "$1 {{GENDER:$2|changed}} <strong>$3</strong>, a page on {{GENDER:$4|your}} watchlist{{PLURAL:$5||, $5 times}}.",
+ 	"notification-header-watchlist-created": "$1 {{GENDER:$2|created}} <strong>$3</strong>, a page on {{GENDER:$4|your}} watchlist{{PLURAL:$5||, $5 times}}.",
+diff -ru out/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php patchedout/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php
+--- out/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php	2023-01-10 12:45:36.000000000 +0530
++++ patchedout/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php	2023-02-05 17:08:36.619701274 +0530
+@@ -445,4 +445,9 @@
+ 			->makeConfig( 'googlelogin' )
+ 			->get( 'GLAuthoritativeMode' );
+ 	}
++
++	// PATCH: to disallow changing of email after login
++	public function providerAllowsPropertyChange( $property ) {
++		return false;
++	}
+ }
+diff -ru out/w/extensions/PrivateDomains/extension.json patchedout/w/extensions/PrivateDomains/extension.json
+--- out/w/extensions/PrivateDomains/extension.json	2023-01-17 12:51:24.000000000 +0530
++++ patchedout/w/extensions/PrivateDomains/extension.json	2023-02-05 17:22:56.866607838 +0530
+@@ -25,7 +25,16 @@
+ 	},
+ 	"AutoloadClasses": {
+ 		"PrivateDomainsHooks": "includes/PrivateDomainsHooks.php",
+-		"SpecialPrivateDomains": "includes/SpecialPrivateDomains.php"
++		"SpecialPrivateDomains": "includes/SpecialPrivateDomains.php",
++		"PrivateDomainsPreAuthProvider": "includes/PrivateDomainsPreAuthProvider.php"
++	},
++	"AuthManagerAutoConfig": {
++		"preauth": {
++			"PrivateDomainsPreAuthProvider": {
++				"class": "PrivateDomainsPreAuthProvider",
++				"sort": 10
++			}
++		}
+ 	},
+ 	"HookHandlers": {
+ 		"default": {
+diff -ru out/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php patchedout/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php
+--- out/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php	2023-01-17 12:51:24.000000000 +0530
++++ patchedout/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php	2023-02-05 16:59:11.905516387 +0530
+@@ -40,7 +40,7 @@
+ 			$out = $editpage->getContext()->getOutput();
+ 			$out->setPageTitle( wfMessage( 'badaccess' )->text() );
+ 			$out->setHTMLTitle( wfMessage( 'errorpagetitle' )->text() );
+-			$affiliateName = PrivateDomains::getParam( 'privatedomains-affiliatename' );
++			$affiliateName = SpecialPrivateDomains::getParam( 'privatedomains-affiliatename' );
+ 			$out->addHTML( '<div class="errorbox" style="width:92%;"><strong>' );
+ 			$out->addWikiMsg( 'privatedomains-invalidemail', $affiliateName );
+ 			$out->addHTML( '</strong></div><br /><br /><br />' );
+@@ -62,7 +62,7 @@
+ 	public static function onUserLoginComplete( $user ) {
+ 		$userGroupManager = MediaWikiServices::getInstance()->getUserGroupManager();
+ 		if ( $user->isEmailConfirmed() ) {
+-			$domainsStr = PrivateDomains::getParam( 'privatedomains-domains' );
++			$domainsStr = SpecialPrivateDomains::getParam( 'privatedomains-domains' );
+ 			if ( $domainsStr != '' ) {
+ 				$email = strtolower( $user->mEmail );
+ 				// get suffix domain name
+Only in patchedout/w/extensions/PrivateDomains/includes: PrivateDomainsPreAuthProvider.php
+diff -ru out/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php patchedout/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php
+--- out/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php	2023-01-17 12:51:25.000000000 +0530
++++ patchedout/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php	2023-02-05 17:03:50.200953773 +0530
+@@ -107,7 +107,11 @@
+ 		$action = htmlspecialchars( $titleObj->getLocalURL( 'action=submit' ) );
+ 
+ 		// Can the user execute the action?
+-		$this->checkPermissions();
++		try  {
++			$this->checkPermissions();
++		}  catch (PermissionsError $e)  {
++			return;
++		}
+ 
+ 		// Is the database in read-only mode?
+ 		$this->checkReadOnly();
+@@ -173,6 +177,7 @@
+ 			$out->addWikiMsg( 'badaccess-group0' );
+ 		}
+ 		$out->returnToMain();
++		throw new PermissionsError( $this->mRestriction );
+ 	}
+ 
+ 	/**

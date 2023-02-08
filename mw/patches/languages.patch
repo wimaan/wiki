@@ -1,0 +1,12 @@
+diff -ru out/w/languages/i18n/en.json patchedout/w/languages/i18n/en.json
+--- out/w/languages/i18n/en.json	2022-12-23 03:24:49.243220800 +0530
++++ patchedout/w/languages/i18n/en.json	2023-02-08 18:17:09.574220206 +0530
+@@ -398,7 +398,7 @@
+ 	"cannotlogoutnow-title": "Cannot log out now",
+ 	"cannotlogoutnow-text": "Logging out is not possible when using $1.",
+ 	"welcomeuser": "Welcome, $1!",
+-	"welcomecreation-msg": "Your account has been created.\nYou can change your {{SITENAME}} [[Special:Preferences|preferences]] if you wish.",
++	"welcomecreation-msg": "Your account has been created.\nYou can change your {{SITENAME}} [[Special:Preferences|preferences]] if you wish.\nPlease confirm your email account via the link sent to your email to begin editing.",
+ 	"yourname": "Username:",
+ 	"userlogin-yourname": "Username",
+ 	"userlogin-yourname-ph": "Enter your username",
