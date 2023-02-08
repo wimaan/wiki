@@ -7,4 +7,4 @@ FROM alpine:latest
 #       && mv /tmp/mediawiki-1.37.1 /srv/mediawiki
 
 COPY ./old.tar /tmp/dump.tar
-RUN mkdir -p /var/www/wimaan.org/w; tar -xf /tmp/dump.tar -C /var/www/wimaan.org/w
+RUN mkdir -p /var/www/wimaan.org/w; tar -xf /tmp/dump.tar -C /var/www/wimaan.org
