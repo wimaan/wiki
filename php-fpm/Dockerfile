@@ -1,5 +1,5 @@
 # from https://github.com/wikimedia/mediawiki-docker/blob/master/1.37/fpm-alpine/Dockerfile
-FROM php:7.4-fpm-alpine
+FROM php:8-fpm-alpine
 
 ENV PHPIZE_DEPS=autoconf\ dpkg-dev\ file\ g++\ gcc\ libc-dev\ make\	re2c\ curl-dev
 
