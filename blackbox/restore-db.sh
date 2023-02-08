@@ -1,11 +1,14 @@
 #!/bin/sh
 
+cd -- "$(dirname $0)"
+
 set -a; . ../env; set +a
 
 # sanity check: file supplied?
 if [ $# -lt 1 ]
 then
-    echo "Usage: restore-db.sh dump-file"
+    echo "Usage: ./restore-db.sh dump-file"
+    echo "      {dump-file}: path relative to this script"
     exit 1
 fi
 
