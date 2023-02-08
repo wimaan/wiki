@@ -1,0 +1,2 @@
+<?php
+$wgLogRestrictions["newusers"] = 'moderation';
