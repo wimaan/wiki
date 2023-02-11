@@ -6,7 +6,7 @@ set -a; . ../env; set +a
 
 # run containers
 cd ..
-docker compose up --build -d
+docker-compose up --build -d
 
 sleep 5
 

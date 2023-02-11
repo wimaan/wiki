@@ -11,9 +11,9 @@ esac
 
 
 echo "Stopping wiki containers."
-docker compose stop
+docker-compose stop
 echo "Removing wiki containers."
-yes | docker compose rm
+yes | docker-compose rm
 echo "Removing all unused containers."
 yes | docker system prune -a
 echo "Removing wiki volumes."
