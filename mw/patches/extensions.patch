@@ -1,4 +1,4 @@
-diff -ru out/w/extensions/Echo/i18n/en.json patchedout/w/extensions/Echo/i18n/en.json
+diff -ruN out/w/extensions/Echo/i18n/en.json patchedout/w/extensions/Echo/i18n/en.json
 --- out/w/extensions/Echo/i18n/en.json	2023-02-03 06:36:17.000000000 +0530
 +++ patchedout/w/extensions/Echo/i18n/en.json	2023-02-08 18:14:44.016119862 +0530
 @@ -185,7 +185,7 @@
@@ -10,7 +10,7 @@ diff -ru out/w/extensions/Echo/i18n/en.json patchedout/w/extensions/Echo/i18n/en
  	"notification-header-mention-summary": "$1 {{GENDER:$2|mentioned}} {{GENDER:$3|you}} in an edit summary on <strong>$4</strong>.",
  	"notification-header-watchlist-changed": "$1 {{GENDER:$2|changed}} <strong>$3</strong>, a page on {{GENDER:$4|your}} watchlist{{PLURAL:$5||, $5 times}}.",
  	"notification-header-watchlist-created": "$1 {{GENDER:$2|created}} <strong>$3</strong>, a page on {{GENDER:$4|your}} watchlist{{PLURAL:$5||, $5 times}}.",
-diff -ru out/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php patchedout/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php
+diff -ruN out/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php patchedout/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php
 --- out/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php	2023-01-10 12:45:36.000000000 +0530
 +++ patchedout/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationProvider.php	2023-02-05 17:08:36.619701274 +0530
 @@ -445,4 +445,9 @@
@@ -23,7 +23,7 @@ diff -ru out/w/extensions/GoogleLogin/includes/Auth/GooglePrimaryAuthenticationP
 +		return false;
 +	}
  }
-diff -ru out/w/extensions/PrivateDomains/extension.json patchedout/w/extensions/PrivateDomains/extension.json
+diff -ruN out/w/extensions/PrivateDomains/extension.json patchedout/w/extensions/PrivateDomains/extension.json
 --- out/w/extensions/PrivateDomains/extension.json	2023-01-17 12:51:24.000000000 +0530
 +++ patchedout/w/extensions/PrivateDomains/extension.json	2023-02-05 17:22:56.866607838 +0530
 @@ -25,7 +25,16 @@
@@ -44,7 +44,7 @@ diff -ru out/w/extensions/PrivateDomains/extension.json patchedout/w/extensions/
  	},
  	"HookHandlers": {
  		"default": {
-diff -ru out/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php patchedout/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php
+diff -ruN out/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php patchedout/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php
 --- out/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php	2023-01-17 12:51:24.000000000 +0530
 +++ patchedout/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php	2023-02-05 16:59:11.905516387 +0530
 @@ -40,7 +40,7 @@
@@ -65,8 +65,47 @@ diff -ru out/w/extensions/PrivateDomains/includes/PrivateDomainsHooks.php patche
  			if ( $domainsStr != '' ) {
  				$email = strtolower( $user->mEmail );
  				// get suffix domain name
-Only in patchedout/w/extensions/PrivateDomains/includes: PrivateDomainsPreAuthProvider.php
-diff -ru out/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php patchedout/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php
+diff -ruN out/w/extensions/PrivateDomains/includes/PrivateDomainsPreAuthProvider.php patchedout/w/extensions/PrivateDomains/includes/PrivateDomainsPreAuthProvider.php
+--- out/w/extensions/PrivateDomains/includes/PrivateDomainsPreAuthProvider.php	1970-01-01 05:30:00.000000000 +0530
++++ patchedout/w/extensions/PrivateDomains/includes/PrivateDomainsPreAuthProvider.php	2023-02-05 17:21:32.482519539 +0530
+@@ -0,0 +1,36 @@
++<?php
++
++use MediaWiki\Auth\AbstractPreAuthenticationProvider;
++use MediaWiki\Auth\AuthenticationRequest;
++use MediaWiki\Auth\AuthenticationResponse;
++use MediaWiki\Auth\AuthManager;
++
++class PrivateDomainsPreAuthProvider extends AbstractPreAuthenticationProvider {
++	/**
++	 * @inheritDoc
++	 */
++	public function testForAccountCreation( $user, $creator, array $reqs ) {
++		$groups = $user->getEffectiveGroups();
++
++		$domainsStr = SpecialPrivateDomains::getParam( 'privatedomains-domains' );
++		if ( $domainsStr != '' ) {
++			if($user->mEmail && Sanitizer::validateEmail ($user->mEmail))  {
++				$email = strtolower( $user->mEmail );
++				
++				preg_match( "/([^@]+)@(.+)$/i", $email, $matches );
++				$emailDomain = $matches[2];
++
++				$domainsArr = explode( "\n", $domainsStr );
++				foreach ( $domainsArr as $allowedDomain ) {
++					$allowedDomain = strtolower( $allowedDomain );
++					if ( preg_match( "/.*?$allowedDomain$/", $emailDomain ) ) {
++						return Status::newGood();
++					}
++				}
++			}
++		}
++		
++		$affiliateName = SpecialPrivateDomains::getParam( 'privatedomains-affiliatename' );
++		return Status::newFatal(wfMessage( 'privatedomains-invalidemail', $affiliateName ));
++	}
++}
+diff -ruN out/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php patchedout/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php
 --- out/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php	2023-01-17 12:51:25.000000000 +0530
 +++ patchedout/w/extensions/PrivateDomains/includes/SpecialPrivateDomains.php	2023-02-05 17:03:50.200953773 +0530
 @@ -107,7 +107,11 @@
