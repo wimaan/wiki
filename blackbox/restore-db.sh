@@ -31,12 +31,12 @@ then
 fi
 
 # load the dump file
-docker exec -i $db_cont_id mysql -uroot -p${DB_ROOT_PASS} < $backup_file
+docker exec -i $db_cont_id mysql -uroot -p${DB_ROOT_PASS} --database=${DB_NAME} < $backup_file
 
 echo "Finished uploading dump."
 
 # verify
-admin_exists=$(echo "USE my_wiki; SELECT user_name FROM user WHERE user_name = 'Wimaan-admin';" | docker exec -i $db_cont_id mysql -uroot -p${DB_ROOT_PASS} | grep -o Wimaan-admin)
+admin_exists=$(echo "USE ${DB_NAME}; SELECT user_name FROM user WHERE user_name = 'Wimaan-admin';" | docker exec -i $db_cont_id mysql -uroot -p${DB_ROOT_PASS} | grep -o Wimaan-admin)
 if [ "$admin_exists" == "Wimaan-admin" ]
 then
     echo "Successful."
