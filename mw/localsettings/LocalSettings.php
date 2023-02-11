@@ -85,10 +85,6 @@ include_once ("config/secret_auth.php");
 # Changing this will log out all existing sessions.
 $wgAuthenticationTokenVersion = "1";
 
-# Site upgrade key. Must be set to a string (default provided) to turn on the
-# web installer while LocalSettings.php is in place
-$wgUpgradeKey = "";
-
 # Path to the GNU diff3 utility. Used for conflict resolution.
 $wgDiff3 = "/usr/bin/diff3";
 
